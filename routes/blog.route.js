@@ -4,6 +4,7 @@ import VerifyJWT from "../middlewares/auth.middleware.js";
 import Blog from "../models/blog.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import Comment from "../models/comment.model.js";
 const router = Router();
 router
   .route("/new-post")
@@ -31,12 +32,17 @@ router
 
 router.route("/").get(async (req, res) => {
   try {
-    const posts = await Blog.find({});
+    const posts = await Blog.find({}).populate("createdBy");
     console.log(posts);
+    const comments = await Comment.find({}).populate("createdBy");
+
     if (!posts) {
       throw new ApiError(400, "error in finding posts");
     }
-    res.status(200).json(new ApiResponse(200, posts, "fetched"));
+    if (!comments) {
+      throw new ApiError(400, "error in finding comments");
+    }
+    res.status(200).json(new ApiResponse(200, { posts, comments }, "fetched"));
   } catch (error) {
     throw new ApiError(400, "failed to find");
   }
@@ -55,5 +61,23 @@ router.route("/:id").get(async (req, res) => {
   } catch (error) {
     throw new ApiError(400, "error in getting id");
   }
+});
+router.route("/comment/:blogId").post(async (req, res) => {
+  const { blogId } = req.params;
+  const { content } = req.body;
+  if (!blogId) {
+    throw new ApiError(400, "blogid is invalid");
+  }
+  const comment = await Comment.create({
+    content,
+    blogId: blogId,
+    createdBy: req.user?._id,
+  });
+  if (!comment) {
+    throw new ApiError(400, "comment is not created");
+  }
+  res
+    .status(200)
+    .json(new ApiResponse(200, comment, "sucess to create a comment"));
 });
 export default router;

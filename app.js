@@ -15,4 +15,5 @@ import userRoutes from "./routes/user.route.js";
 import blogRoutes from "./routes/blog.route.js";
 app.use("/user", userRoutes);
 app.use("/blog", blogRoutes);
+
 export default app;
