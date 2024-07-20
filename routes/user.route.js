@@ -53,9 +53,10 @@ router
 
 router.route("/login").post(async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
+  console.log("body", email);
+  /*   if ([email, password].some((field) => field.trim() == "")) {
     throw new ApiError(400, "the data is incorrect ");
-  }
+  } */
 
   const user = await User.findOne({ email });
   if (!user) {
@@ -75,7 +76,7 @@ router.route("/login").post(async (req, res) => {
   res
     .status(200)
     .cookie("acessToken", acessToken, options)
-    .json(new ApiResponse(200, " acess token is created sucessfully "));
+    .json(new ApiResponse(200, user, " user login done sucessfully "));
 });
 //signin
 export default router;
